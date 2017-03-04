@@ -1,0 +1,609 @@
+%------------------------------------------%
+% GarthTex v. 1.0
+% Within this package there are four
+% Document preparation schemes:
+%
+% 1) Default--Provides a Theorem environment
+%  with several variants therein
+%
+% 2) HW -- provides a problem environment
+%
+% 3) draft -- provides a nice page header
+%  to be used in conjunction with other 
+%  schemes if math is needed.
+%------------------------------------------%
+
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{GarthTex}[09/15/2015]
+
+%-----------------Packages-----------------%
+\RequirePackage{inputenc}
+\RequirePackage{amscd,amsmath,amssymb}
+\RequirePackage{mathtools}
+\RequirePackage{graphicx,tabularx}
+\RequirePackage[margin=0.75in]{geometry}
+\RequirePackage[small,nohug]{diagrams}
+\RequirePackage[mathscr]{euscript}
+\RequirePackage{enumerate}
+\RequirePackage[shortlabels,inline]{enumitem}
+\RequirePackage{algorithm}
+\RequirePackage{algpseudocode}
+\RequirePackage{float}
+\RequirePackage{fancyhdr}
+\RequirePackage{multirow}
+\RequirePackage{hhline}
+\RequirePackage{cite}
+\RequirePackage{etoolbox}
+\RequirePackage{xstring,xifthen,xcolor,xparse}
+\RequirePackage[pdftex,hidelinks]{hyperref}
+\RequirePackage[amsthm,thmmarks,thref,hyperref]{ntheorem}
+\RequirePackage{letltxmacro}
+
+%------------Option definitions------------%
+\newif\ifdraft
+\DeclareOption{draft}{
+  \drafttrue
+}
+\newif\ifhw
+\DeclareOption{hw}{
+  \hwtrue
+}
+\ExecuteOptions{}
+\ProcessOptions\relax
+
+%-----------Global Configuration-----------%
+\diagramstyle[labelstyle=\scriptstyle]
+\setlength{\parindent}{15pt}
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+%-------Symbol and Formatting Macros-------%
+% Apply a fix to "pretty up" the theorem lists
+\makeatletter
+\patchcmd{\thm@@thmline@noname}{2.3em}{4em}{}{}
+\patchcmd{\thm@@thmline@noname}{2.3em}{4em}{}{}
+\patchcmd{\thm@@thmline@noname}{2.3em}{4em}{}{}
+\patchcmd{\thm@@thmline@name}{2.3em}{4em}{}{}
+\patchcmd{\thm@@thmline@name}{2.3em}{4em}{}{}
+\patchcmd{\thm@@thmline@name}{2.3em}{4em}{}{}
+\makeatother
+%-----------Theorem Environments-----------%
+\makeatletter
+\renewtheoremstyle{plain}%
+{\item[\hskip\labelsep \theorem@headerfont ##1\ ##2 \theorem@separator]}%
+{\item[\hskip\labelsep \theorem@headerfont ##1\ ##2\ (##3)  \theorem@separator]}
+
+\newtheoremstyle{srg}%
+{\item[\hskip\labelsep \theorem@headerfont ##1\ ##2 \theorem@separator]}%
+{\item[\hskip\labelsep \theorem@headerfont ##1\ ##2 - ##3 \theorem@separator]}
+\makeatother
+%-----------Theorem Styling----------------%
+\theoremstyle{changebreak}
+\theorembodyfont{}
+\theoremheaderfont{\normalfont\bfseries}
+\theoremseparator{:}
+
+\newtheorem{theorem}{Theorem}
+
+%-----------Type Declarations -------------%
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{claim}{Claim}[section]
+\newtheorem{cond}{Condition}[section]
+
+\theoremstyle{plain}
+\theoremsymbol{\ensuremath{\lrcorner}}
+\theoremseparator{-}
+\newtheorem{defn}[thm]{Definition}
+
+%-----------Example Environment------------%
+\theoremstyle{changebreak}
+\theorembodyfont{}
+\theoremheaderfont{\normalfont\bfseries}
+\theoremseparator{:}
+\theoremsymbol{\ensuremath{\Diamond}}
+\newtheorem{expl}{Example}[section]
+%----------Note Environment----------------%
+\theoremstyle{break}
+\theorembodyfont{}
+\theoremheaderfont{\normalfont\bfseries}
+\theoremseparator{:}
+\theoremsymbol{\hfill\ensuremath{\sharp}}
+\newtheorem{note}{Note}[subsection]
+%----------Strategy Environment------------%
+\theoremstyle{srg}
+\theorembodyfont{}
+\theoremheaderfont{\normalfont\bfseries}
+\theoremseparator{:}
+\theoremsymbol{\ensuremath{\spadesuit}}
+\newtheorem{strat}{Strategy}[section]
+
+%----------Assumption Environment----------%
+\newcounter{assumption}
+% \setcounter{assumption}{1}
+
+\theoremstyle{srg}
+\theorembodyfont{}
+\theoremheaderfont{\normalfont\bfseries}
+\theoremseparator{:}
+\theoremsymbol{}
+\newtheorem{assume}{Assumption}[assumption]
+
+% \newenvironment{example}[1][]{\refstepcounter{example}\par\medskip
+%    \textbf{Example~\theexample. #1} \rmfamily}{\medskip}
+
+\newenvironment{reasoning}{\refstepcounter{assumption}\par\addvspace{1ex}
+  \noindent\textit{Justification for \theassumption\newline}}{%
+  \hfill\ensuremath{\ulcorner\mkern-\thickmuskip\lrcorner}\vspace{.1in}}
+%-------------Symbolic Macros--------------%
+%       Custom symbols                     %
+%------------------------------------------%
+%       Square root symbol                 %
+%------------------------------------------%
+% this renames \sqrt as \oldsqrt
+\LetLtxMacro{\oldsqrt}{\sqrt}
+\renewcommand{\sqrt}[1][\hphantom{3}]{%
+  \def\DHLindex{#1}\mathpalette\DHLhksqrt}
+% this defines the new \sqrt in terms of the old one
+\newcommand{\DHLhksqrt}[2]{%
+  \setbox0=\hbox{\ensuremath{#1\oldsqrt[\DHLindex]{#2}}}\dimen0=\ht0
+  \advance\dimen0-0.2\ht0
+  \setbox2=\hbox{\vrule height\ht0 depth -\dimen0}{\box0\lower0.4pt\box2}\hspace{.16em}}
+%------------------------------------------%
+%       Dimension with parentheses         %
+%------------------------------------------%
+% Rename \dim as \olddim
+% \LetLtxMacro{\olddim}{\dim}
+% \renewcommand{\dim}[1][]{%
+%  \def\mydim{#1}\mathpalette
+%  \def\mydim{#1}
+%------------------------------------------%
+%       Blackboard Mu Symbol               %
+%------------------------------------------%
+\newcommand{\leftbar}[1]{
+\mbox{
+$\raisebox{-0.59ex}{$l$}
+\hspace{-0.18em}#1\hspace{-0.88em}
+\raisebox{-0.98ex}{\scalebox{2}{$\color{white}.$}}
+\hspace{-0.41em}
+\raisebox{+0.88ex}{$\color{white}.$}
+\hspace{0.46em}$}}
+%------------------------------------------%
+%       Row and Column Vectors             %
+%------------------------------------------%
+\newcommand{\myvector}[1]{\begin{pmatrix}#1\end{pmatrix}}
+\ExplSyntaxOn
+\NewDocumentCommand{\myvec}{ m o }
+    {
+        \my_vector:nn {#1}{#2}
+    }
+
+\cs_new_protected:Npn \my_vector:nn #1 #2
+    {
+        % set a sequence from the clist
+        \seq_set_from_clist:Nn \l_tmpa_seq {#1}
+        % applies final arg to each element of second seq and stores result in first seq
+        \seq_set_map:NNn \l_tmpb_seq \l_tmpa_seq {##1}
+        % \seq_use puts the items from the seq back in the input with "\ " as a separator
+        \myvector{\seq_use:Nnnn \l_tmpb_seq {#2}{#2}{#2}}
+    }
+\ExplSyntaxOff
+
+%------------------------------------------%
+%       Repeated Operator Function         %
+%------------------------------------------%
+\ExplSyntaxOn
+\DeclareExpandableDocumentCommand{\myrepeat}{O{}mm}
+ {
+  \int_compare:nT { #2 > 0 }
+   {
+    #3 \prg_replicate:nn { #2 - 1 } { #1#3 }
+   }
+ }
+\ExplSyntaxOff
+\newcommand{\multitranspose}[2]{{#1}^{\myrepeat{#2}{\mathsf{T}}}}
+
+
+% Row vector
+\newcommand{\rvec}[1]{\myvec{#1}[&]}
+% Column vector
+\newcommand{\cvec}[1]{\myvec{#1}[\\]}
+% Permutation of #1
+\newcommand{\permute}[1]{\myvec{#1}[\ ]}
+%---------Short hand macros----------------%
+%       Macros for commonly used           %
+%       TeX symbols                        %
+%------------------------------------------%
+%       Math Operators and symbols         %
+%       that don't have an input           %
+%------------------------------------------%
+\let\oldforall\forall
+% overload for all to add a space afterward
+\renewcommand{\forall}{\oldforall\,}
+% Epsilon
+\newcommand{\ep}{\epsilon}
+% varsigma symbol
+\newcommand{\vs}{\varsigma}
+% varphi shorthand
+\newcommand{\vphi}{\varphi}
+% Normal Subgroup
+\newcommand{\nsgp}{\unlhd}
+% Isomorphic
+\newcommand{\iso}{\cong}
+% not Isomorphic
+\newcommand{\niso}{\ncong}
+% twoheaded Right arrow
+\newcommand{\thra}{\twoheadrightarrow}
+% hook Right arrow
+\newcommand{\ira}{\hookrightarrow}
+% hook left arrow
+\newcommand{\ila}{\hookleftarrow}
+% Small Right arrow
+\newcommand{\ra}{\rightarrow}
+% Small left arrow
+\newcommand{\la}{\leftarrow}
+% Large right arrow
+\newcommand{\RA}{\Rightarrow}
+% Large Left arrow
+\newcommand{\LA}{\Leftarrow}
+% If and only if symbol
+\newcommand{\LRA}{\Leftrightarrow}
+% right arrow with tail
+\newcommand{\rat}{\rightarrowtail}
+% Not in symbol
+\newcommand{\nin}{\not\in}
+% Modified require in algorithmic
+\renewcommand{\algorithmicrequire}{\textbf{Inputs:}}
+%------------------------------------------%
+%       Type setting Operators and         %
+%       symbols that don't have an         %  
+%       input                              %
+%------------------------------------------%
+% no indentation
+\newcommand{\noi}{\noindent}
+% i.e. in italics
+\newcommand{\ie}{\tit{i.e.}}
+% e.g. in italics
+\newcommand{\eg}{\tit{e.g.}}
+% Note well
+\newcommand{\NB}{\noindent\textbf{\underline{Nota Bene:}} }
+% Proper typsetting for "Sage"
+\newcommand{\Sage}{\ensuremath{\mathsf{Sage}}}
+% Single Claim (outside numbering scheme)
+\newcommand{\Claim}{\noindent\textbf{\underline{Claim:}} }
+
+%------------------------------------------%
+%       Custom Math Symbols                %
+%------------------------------------------%
+
+%------------------------------------------%
+%       Custom Math Operators and symbols  %
+%       that require an input              %
+%------------------------------------------%
+% math typesetting
+%------------------------------------------%
+% font typically used for ideals.  
+\newcommand{\mk}[1]{\mathfrak{#1}}
+% Math Cal font
+\newcommand{\mc}[1]{\mathcal{#1}}
+% Wide Tilde over
+\newcommand{\wti}[1]{\widetilde{#1}}
+% math bold face
+\newcommand{\mbf}[1]{\mathbf{#1}}
+%------------------------------------------%
+% math operators
+%------------------------------------------%
+% Image of #1
+\newcommand{\im}[1]{\operatorname{Im}\left({#1}\right)}
+% Kernel of #1
+\renewcommand{\ker}[1]{\operatorname{Ker}\left({#1}\right)}
+% Span of #2 over #1
+\newcommand{\Span}[2][]{\operatorname{span}_{#1}\left(#2\right)}
+% column space of #2 over #1
+\newcommand{\col}[2][]{\operatorname{Col}_{#1}\left(#2\right)}
+% Cyclic group on n elements
+\newcommand{\Cy}[1]{\operatorname{Cyc}_{#1}}
+% Characteristic of #1
+\newcommand{\car}[1]{\operatorname{char}\left({#1}\right)}
+% Picard group of degree {#1} over {#2}
+\newcommand{\Pic}[2]{\operatorname{Pic}^{#1}_{#2}}
+% mathsf gcd
+\newcommand{\gc}[1]{\mathit{gcd}(#1)}
+% mathsf lcm
+\newcommand{\lc}[1]{\mathit{lcm}(#1)}
+% Limit with listing below
+\newcommand{\Lim}[1]{\lim\limits_{#1}}
+%------------------------------------------%
+% math delimiters
+%------------------------------------------%
+% Generated by #1
+\newcommand{\gen}[1]{\left\langle #1\right\rangle}
+% floor of #1
+\newcommand{\floored}[1]{\lfloor#1\rfloor}
+% ceiling of #1
+\newcommand{\ceiled}[1]{\lceil#1\rceil}
+%------------------------------------------%
+% math symbols
+%------------------------------------------%
+% the group Z/nZ
+\newcommand{\Zm}[1]{\mathbb{Z}/#1\mathbb{Z}}
+% Epsilon over #1
+\newcommand{\epfrac}[1]{\frac{\epsilon}{#1}}
+% Group of units #1^\times
+\newcommand{\gou}[1]{#1{\hspace{.08em}}^\times}
+% Elliptic curve defined over #1, E(#1)
+\newcommand{\EC}[1]{E\left(\hspace{.1em}#1\right)}
+% Finite Field with #1 elements
+\newcommand{\FF}[1]{\mathbb{F}_{#1}}
+% Group of points for Elliptic Curve over F_{#1}
+\newcommand{\EG}[1]{\#E\left(\mathbb{F}_{#1}\right)}
+% symbolic x in X (automatically handles case)
+\newcommand{\elm}[1]{\lowercase{#1}\in\MakeUppercase{#1}}
+% Set of C^{#1} functions
+\newcommand{\C}[1]{\mathscr{C}^{#1}}
+% Galois group Gal(#1)
+\newcommand{\G}[2][]{\operatorname{Gal}_{#1}\left(#2\right)}
+% Ball at #1
+\newcommand{\B}[1]{\mathscr{B}\left({#1}\right)}
+
+%------------------------------------------%
+%       Type setting Operators and         %
+%       symbols that require an            %
+%       input                              %
+%------------------------------------------%
+% case with numbering (user defined number)
+\newcommand{\Case}[1]{\noindent\textbf{\underline{Case #1:}}}
+% section w/numbering
+\newcommand{\s}[1]{\section{#1}}
+% section w/out numbering
+\newcommand{\sn}[1]{\section*{#1}}
+% subsection w/numbering
+\newcommand{\subs}[1]{\subsection{#1}}
+% subsection w/out numbering
+\newcommand{\subsn}[1]{\subsection*{#1}}
+% Overline
+\newcommand{\ol}[1]{\overline{#1}}
+% Underline
+\newcommand{\ul}[1]{\underline{#1}}
+% bold face
+\newcommand{\tbf}[1]{\textbf{#1}}
+% italics
+\newcommand{\tit}[1]{\textit{#1}}
+%------------------------------------------%
+%       Custom Math Symbols                %
+%       that don't have an input           %
+%------------------------------------------%
+% Point at infinity/script O
+\newcommand{\0}{\mathsf{O}}
+% BlackBoard mu
+\newcommand{\Bmu}{\leftbar{\mu}\hspace{.02cm}{}}
+% quadratic imaginary extension of Q
+\newcommand{\K}{\mathrm{K}}
+% Cokernel
+\newcommand{\coker}{\mathit{coker }}
+% Radical
+\newcommand{\Rad}{\ensuremath{\mathsf{Rad}}}
+% if (=>) symbol/ implies
+\newcommand{\imp}{\noindent\ensuremath{\left(\Rightarrow\right)} }
+% only if (<=) symbol
+\newcommand{\pmi}{\noindent\ensuremath{\left(\Leftarrow\right)} }
+% Just a line
+\newarrow{Line}{-}{-}{-}{-}{-}
+
+%------------------------------------------%
+%       Custom Math Symbols                %
+%       with optional input                %
+%------------------------------------------%
+% math typesetting
+%------------------------------------------%
+% Chalkboard Bold of #2^#1: usage \bb{R} for \mathbb{R} or \bb[2]{R} for \mathbb{R}^2
+\newcommand{\bb}[2][]{\mathbb{#2}^{#1}}
+% The such that symbol
+\newcommand{\st}[1][]{\ifthenelse{\isempty{#1}}{\,|\,}{\,\colon\,}}
+%------------------------------------------%
+% math operators
+%------------------------------------------%
+% Homomorphisms of #2 over #1 - #1 defaults to empty string
+\newcommand{\Hom}[2][]{\operatorname{Hom}_{#1}\left({#2}\right)}
+% Endomorphism Ring of #2 over #1 - #1 defaults to empty string
+\newcommand{\End}[2][]{\operatorname{End}_{#1}\left({#2}\right)}
+% Automorphisms of #1 - #1 defaults to G
+\newcommand{\aut}[1][G]{\operatorname{Aut}\left({#1}\right)}
+% Inner Automorphisms of #1 - #1 defaults to G
+\newcommand{\inn}[1][G]{\operatorname{Inn}\left({#1}\right)}
+% stabilizer of #1 (G by default) in #2
+\newcommand{\stab}[2][G]{\mathit{stab}_{#1}(#2)}
+% Nullity of #1 with optional restriction
+\newcommand{\nl}[2][]{\mathsf{Null}_{#1}\left(#2\right)}
+% Rank of #1 with optional restriction
+\newcommand{\rk}[2][]{\mathcal{R}_{#1}\left(#2\right)}
+% Dual space, {#1}^*
+\newcommand{\ds}[1][V]{{#1}^{\ast}}
+% double Dual space, {#1}^{**}
+\newcommand{\dds}[1][V]{{#1}^{\ast\ast}}
+
+%-----------will be removed----------------%
+% transpose of #1 with repeat option of #2 (both are optional)
+% \DeclareDocumentCommand{\tr}{ O{} O{1}}{\multitranspose{#1}{#2}}
+%------------------------------------------%
+
+% codimension
+\newcommand{\codim}[1][]{\operatorname{codim}{#1} }
+% lcm with optional input
+\DeclareMathOperator{\LCM}{lcm}
+\newcommand{\lcm}[1][]{\ifthenelse{%
+       \isempty{#1}}{\LCM}{\LCM\left(#1\right)}}
+% overload liminf to put limits below the operator
+\renewcommand{\liminf}[1][]{\varliminf\limits_{#1}}
+% overload limsup to put limits below the operator
+\renewcommand{\limsup}[1][]{\varlimsup\limits_{#1}}
+% Union with indexing above[optional] and below{required}
+\newcommand{\Bcup}[2][]{\bigcup\limits_{#2}^{#1}}
+% Intersection with indexing above[optional] and below{required}
+\newcommand{\Bcap}[2][]{\bigcap\limits_{#2}^{#1}}
+% Product with indexing above[optional] and below{required}
+\newcommand{\Prod}[2][]{\prod\limits_{#2}^{#1}}
+% Sum with indexing above[optional] and below{required}
+\newcommand{\Sum}[2][]{\sum\limits_{#2}^{#1}}
+% Integral with bounds above/below the int symbol
+\newcommand{\Int}[2][]{\int\limits_{#2}^{#1}}
+
+% relations
+\newcommand{\cmp}[1][]{#1^{{}^{c}}}
+% inverse {#1}^{-1}
+\newcommand{\nv}[1][]{#1^{-1}}
+% commutator of {*}-->\comm{h} = ghg^-1 \comm[a]{h} = aha^-1
+\newcommand{\comm}[2][g]{#1\hspace{.1em}#2\hspace{.1em}#1^{-1}}
+
+% Symbols
+% Symmetric group of #1 elements
+\newcommand{\Sym}[1][n]{\ensuremath{S_{#1}}}
+% Frob_{1} {2} frobenius
+\newcommand{\Frob}[2][]{\operatorname{Frob}_{#2}\,{#1}\,}
+% Centralizer of the set #1 (G by default) in the group #2 
+\newcommand{\cnt}[2][G]{\mathit{C}_{#1}(#2)}
+% Normalizer of the set #1 (G by default) in the group #2 
+\newcommand{\nmz}[2][G]{\mathit{N}_{#1}(#2)}
+% Identity:= id
+\newcommand{\id}[1][]{\operatorname{id}_{#1}}
+% Algebraic integers of #1
+\newcommand{\A}[1][]{\mathcal{O}_{#1}}
+% Discriminant of an order
+\newcommand{\D}[1][]{D\left(\A{#1}\right)}
+
+
+\ifdraft
+%--------------Draft Option----------------%
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}{
+\fancyhf{}
+\lhead{\today}
+\chead{}
+\rhead{Rough Draft}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+\renewcommand{\headrulewidth}{0.7pt}
+\renewcommand{\footrulewidth}{0pt}
+}
+\pagestyle{fancy}
+\fi
+
+\ifhw
+%----------------HW Option-----------------%
+%
+% Provides a useful Problem/solution 
+% environment theorem environments not 
+% included. 
+% 
+%------------------------------------------%
+\RequirePackage{fancyhdr}
+\pagestyle{fancy}{
+\fancyhf{}
+\lhead{\today}
+\chead{}
+\rhead{\leftmark}
+\lfoot{}
+\cfoot{}
+\rfoot{\thepage}
+\renewcommand{\headrulewidth}{0.7pt}
+\renewcommand{\footrulewidth}{0pt}
+}
+\pagestyle{fancy}
+%-----------Problem Environments-----------%
+% \newcounter{myenum}
+% \newenvironment{myenumerate}{\setcounter{myenum}{1}\def\item{\par{\bf
+%       \arabic{myenum}.\ }\stepcounter{myenum}}}{\newline}  %\newline\medskip\noindent\ignorespaces}
+
+\newenvironment{Problem}[2][]{%
+  \newcommand{\getlevel}{%
+    \numexpr
+      \ifnum\value{section}>0      1+\fi
+      \ifnum\value{subsection}>0   1+\fi
+    0\relax}
+  \newcommand{\ltxt}[1]{%
+    \ifcase\getlevel
+    \or Problem \arabic{section}.##1
+    \or Problem \arabic{section}.\arabic{subsection}.##1
+    \fi}
+
+  \par\addvspace{1ex}\noindent\textbf{%
+  \ifthenelse{\isempty{#1}}{%
+    {\Large{\ltxt{#2}}}\newline}{%
+    {\Large{\ltxt{#2}}} [#1]\newline}}
+}{\vspace{.1in}}
+
+\newenvironment{Solution}[1][c]{%
+  \par\addvspace{1ex}\noindent\textbf{%
+   \ifthenelse{\equal{#1}{i}}{%
+    \underline{\large{Solution}\small{ [\textcolor{red}{incomplete}]}:}}{%
+    \ifthenelse{\equal{#1}{s}}{%
+     \underline{\large{Solution}\small{ [\textcolor{green}{skipped}]}:}}{%
+     \underline{\large{Solution}\small{ [complete]}:}}
+    }
+   }\hfill\medskip\ \newline
+  }{\hfill $\blacksquare$\vspace{.05in}}
+
+\newenvironment{solution}[1][]{%
+  \par\addvspace{1ex}\noindent\textbf{%
+   \ifthenelse{\isempty{#1}}{%
+    \underline{\large{Solution}:}\newline}{%
+    \underline{\large{Solution}}\small{ [collaborators: #1 ]} :\newline}
+    }
+  }{\hfill$\blacksquare$\vspace{.05in}}
+
+\newcommand{\PPart}[1]{\vspace{.1in}\noindent{\large\textbf{Part #1}} \newline}
+
+%-----------Part Environment---------------%
+%
+% Provides a problem part environment 
+% i.e. 
+% part a
+% part b
+% part c
+% 
+% There is also a resetting counter for 
+% sub-parts, i.e.
+% part a
+%  part i
+%  part ii
+% part b
+%  part i
+%  part ii
+% ...
+%------------------------------------------%
+\newcounter{partcounter}
+\newenvironment{parts}[1][n]{
+  \vspace{-5pt}
+  \begin{list}
+  {\textbf{
+   (\ifthenelse{\equal{#1}{a}}{\alph{partcounter}}{%
+    \ifthenelse{\equal{#1}{A}}{\Alph{partcounter}}{%
+    \ifthenelse{\equal{#1}{r}}{\roman{partcounter}}{%
+    \ifthenelse{\equal{#1}{R}}{\Roman{partcounter}}{%
+    \arabic{partcounter}}}}})}
+  }{
+   \usecounter{partcounter}\setlength{\labelsep}{0.5ex}\setlength{\itemsep}{2pt}
+  }}
+  {\end{list}}
+
+% An environment for cases
+\newcounter{casecounter}
+\newenvironment{case}{
+  \vspace{-10pt}
+  \begin{list}{
+    \textbf{\underline{Case \arabic{casecounter}:}}
+  }{
+    \usecounter{casecounter}
+    \setlength\labelwidth{3in}
+    \setlength\labelsep{1ex}
+    \setlength\leftmargin{.75in}
+    \setlength{\itemsep}{2pt}
+}}{\end{list}}
+\fi
+
+
+
+
+\endinput
